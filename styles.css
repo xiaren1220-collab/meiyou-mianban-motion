@@ -1,0 +1,237 @@
+:root {
+  color-scheme: light;
+  font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  background: #f6f6f8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body {
+  display: grid;
+  place-items: start center;
+  min-height: 100dvh;
+  background: #f6f6f8;
+  touch-action: none;
+}
+
+button,
+img {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+#stage {
+  position: relative;
+  width: calc(402px * var(--app-scale, 1));
+  height: calc(874px * var(--app-scale, 1));
+  flex: none;
+}
+
+#app {
+  --progress: 0;
+  --panel-top: calc(602px - 184px * var(--progress));
+  --panel-height: calc(181px + 184px * var(--progress));
+  --content-top: -462px;
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 402px;
+  height: 874px;
+  overflow: hidden;
+  transform: scale(var(--app-scale, 1));
+  transform-origin: top left;
+  background: #f6f6f8;
+  isolation: isolate;
+}
+
+#pageBackground,
+#topBar,
+#recordContent,
+#toolIcons,
+#voiceBar {
+  display: block;
+  position: absolute;
+  pointer-events: none;
+}
+
+#pageBackground {
+  inset: 0;
+  z-index: 0;
+  width: 402px;
+  height: 874px;
+}
+
+#recordViewport {
+  position: absolute;
+  z-index: 1;
+  top: 106px;
+  left: 0;
+  width: 402px;
+  height: 677px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
+  touch-action: pan-y;
+  cursor: grab;
+}
+
+#recordViewport:active {
+  cursor: grabbing;
+}
+
+#recordViewport::-webkit-scrollbar {
+  display: none;
+}
+
+#recordContent {
+  position: relative;
+  display: block;
+  left: 0;
+  top: 0;
+  width: 402px;
+  height: 1044px;
+}
+
+#recordTail {
+  position: relative;
+  width: 1px;
+  height: 20px;
+  pointer-events: none;
+}
+
+#topBar {
+  z-index: 6;
+  top: 0;
+  left: 0;
+  width: 402px;
+  height: 106px;
+}
+
+#contentBlocker {
+  position: absolute;
+  z-index: 8;
+  top: 106px;
+  left: 0;
+  width: 402px;
+  height: calc(var(--panel-top) - 106px);
+  pointer-events: none;
+  touch-action: none;
+}
+
+#app[data-mode="expanded"] #contentBlocker,
+#app[data-mode="expanding"] #contentBlocker,
+#app[data-mode="collapsing"] #contentBlocker,
+#app[data-mode="dragging-content"] #contentBlocker {
+  pointer-events: auto;
+}
+
+#toolPanel {
+  position: absolute;
+  z-index: 10;
+  top: var(--panel-top);
+  left: 12px;
+  width: 378px;
+  height: var(--panel-height);
+  overflow: hidden;
+  border-radius: 20px;
+  background: rgb(255 255 255 / 70%);
+  box-shadow: 0 0 20px rgb(0 0 0 / 8%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  touch-action: none;
+}
+
+#panelHandle {
+  position: absolute;
+  z-index: 4;
+  top: 0;
+  left: 0;
+  width: 378px;
+  height: 21px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: grab;
+  touch-action: none;
+}
+
+#panelHandle::after {
+  content: "";
+  position: absolute;
+  top: 8px;
+  left: 165px;
+  width: 48px;
+  height: 5px;
+  border-radius: 3px;
+  background: rgb(0 0 0 / 10%);
+}
+
+#panelHandle:active {
+  cursor: grabbing;
+}
+
+#panelHandle:focus-visible {
+  outline: 2px solid #ff6697;
+  outline-offset: -2px;
+}
+
+#iconViewport {
+  position: absolute;
+  z-index: 2;
+  top: 21px;
+  left: 0;
+  width: 378px;
+  height: calc(92px + 188px * var(--progress));
+  overflow: hidden;
+  pointer-events: auto;
+  touch-action: none;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    #000 0,
+    #000 calc(62px + 218px * var(--progress)),
+    transparent calc(92px + 188px * var(--progress))
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    #000 0,
+    #000 calc(62px + 218px * var(--progress)),
+    transparent calc(92px + 188px * var(--progress))
+  );
+}
+
+#app[data-mode="expanded"] #iconViewport {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+#toolIcons {
+  inset: 0;
+  width: 378px;
+  height: 280px;
+}
+
+#voiceBar {
+  z-index: 3;
+  top: calc(117px + 184px * var(--progress));
+  left: 0;
+  width: 378px;
+  height: 64px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #app {
+    scroll-behavior: auto;
+  }
+}
