@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+    <meta name="theme-color" content="#f6f6f8">
+    <title>点滴工具面板动效</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main id="stage">
+      <section id="app" aria-label="点滴记录页面">
+        <img id="pageBackground" src="assets/页面背景.png" alt="">
+
+        <div id="recordViewport">
+          <img id="recordContent" src="assets/内容.png" alt="记录内容" draggable="false">
+          <div id="recordTail" aria-hidden="true"></div>
+        </div>
+
+        <img id="topBar" src="assets/顶部.png" alt="点滴" draggable="false">
+
+        <div id="contentBlocker" aria-hidden="true"></div>
+
+        <section id="toolPanel" aria-label="记录工具面板">
+          <button id="panelHandle" type="button" aria-label="展开工具面板"></button>
+          <div id="iconViewport">
+            <img id="toolIcons" src="assets/图标.png" alt="记录工具" draggable="false">
+          </div>
+          <img id="voiceBar" src="assets/语音栏.png" alt="记录生活点滴" draggable="false">
+        </section>
+      </section>
+    </main>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
