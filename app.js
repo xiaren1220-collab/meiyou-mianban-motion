@@ -62,6 +62,19 @@ export function dragScrollTop(startScroll, deltaY, maximum) {
   return clamp(startScroll - deltaY, 0, maximum);
 }
 
+export function scrollTailSpace(panelTop, contentHeight = 1044) {
+  return requiredScrollPadding(106, contentHeight, 753 - 106, panelTop, 20);
+}
+
+export function contentScrollable(state) {
+  return state === "collapsed";
+}
+
+export function tapAction(source, startProgress) {
+  if (source === "content") return "collapse";
+  return startProgress < 0.5 ? "expand" : "none";
+}
+
 function initDemo() {
   const app = document.querySelector("#app");
   const stage = document.querySelector("#stage");
@@ -89,14 +102,6 @@ function initDemo() {
 
   function contentTarget(panelTop) {
     const contentHeight = recordContent.offsetHeight || 1044;
-    const tailSpace = requiredScrollPadding(
-      106,
-      contentHeight,
-      783 - 106,
-      panelTop,
-      20,
-    );
-    recordTail.style.height = `${tailSpace}px`;
     return targetScrollTop(106, contentHeight, panelTop, 20);
   }
 
@@ -104,6 +109,10 @@ function initDemo() {
     progress = clamp(nextProgress);
     const { panelTop } = geometry(progress);
     app.style.setProperty("--progress", progress.toFixed(6));
+    recordTail.style.height = `${scrollTailSpace(
+      panelTop,
+      recordContent.offsetHeight || 1044,
+    )}px`;
     if (contentMotion) {
       const span = contentMotion.targetProgress - contentMotion.startProgress;
       const ratio = span === 0
@@ -216,12 +225,19 @@ function initDemo() {
     event.stopPropagation();
 
     if (!completedDrag.moved && !cancelled) {
-      if (completedDrag.source === "content") {
+      const action = tapAction(
+        completedDrag.source,
+        completedDrag.startProgress,
+      );
+      if (action === "collapse") {
         animateTo(0, 280);
-      } else if (completedDrag.startProgress < 0.5) {
+      } else if (action === "expand") {
         animateTo(1, 330);
       } else {
-        animateTo(1, 180);
+        contentMotion = null;
+        state = "expanded";
+        app.dataset.mode = state;
+        render(1);
       }
       return;
     }
@@ -246,7 +262,7 @@ function initDemo() {
   bindDragSurface(contentBlocker, "content");
 
   recordViewport.addEventListener("pointerdown", (event) => {
-    if (state !== "collapsed" || event.pointerType !== "mouse" || event.button !== 0) return;
+    if (!contentScrollable(state) || event.pointerType !== "mouse" || event.button !== 0) return;
     contentScrollDrag = {
       pointerId: event.pointerId,
       startY: event.clientY,

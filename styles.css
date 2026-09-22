@@ -78,16 +78,25 @@ img {
   top: 106px;
   left: 0;
   width: 402px;
-  height: 677px;
+  height: 647px;
   overflow-x: hidden;
   overflow-y: auto;
+  overflow-anchor: none;
+  contain: layout paint;
   scrollbar-width: none;
   touch-action: pan-y;
   cursor: grab;
+  -webkit-overflow-scrolling: touch;
 }
 
 #recordViewport:active {
   cursor: grabbing;
+}
+
+#app:not([data-mode="collapsed"]) #recordViewport {
+  overflow-y: hidden;
+  pointer-events: none;
+  touch-action: none;
 }
 
 #recordViewport::-webkit-scrollbar {
@@ -145,11 +154,12 @@ img {
   height: var(--panel-height);
   overflow: hidden;
   border-radius: 20px;
-  background: rgb(255 255 255 / 70%);
+  background: #fff;
   box-shadow: 0 0 20px rgb(0 0 0 / 8%);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   touch-action: none;
+  will-change: top, height;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 #panelHandle {
