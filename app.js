@@ -1,8 +1,8 @@
 export const clamp = (value, min = 0, max = 1) =>
   Math.min(max, Math.max(min, value));
 
-export const monotonicProgress = (previous, current) =>
-  Math.max(previous, current);
+export const contentScrollAtProgress = (start, target, progress) =>
+  start + (target - start) * clamp(progress);
 
 export function geometry(progress) {
   const p = clamp(progress);
@@ -80,8 +80,8 @@ export function tapAction(source, startProgress) {
 
 export const shouldRenderGesture = (moved) => moved;
 
-export const shouldLockLatest = (source, moved) =>
-  source === "panel" && moved;
+export const panelSettleScroll = (source, target, startScroll, latestScroll) =>
+  source === "panel" && target === 0 ? startScroll : latestScroll;
 
 function initDemo() {
   const app = document.querySelector("#app");
@@ -123,33 +123,32 @@ function initDemo() {
     )}px`;
     if (contentMotion) {
       const span = contentMotion.targetProgress - contentMotion.startProgress;
-      const liveRatio = span === 0
+      const ratio = span === 0
         ? 1
         : clamp((progress - contentMotion.startProgress) / span);
-      const ratio = monotonicProgress(contentMotion.ratio, liveRatio);
-      contentMotion.ratio = ratio;
-      recordViewport.scrollTop =
-        contentMotion.startScroll +
-        (contentMotion.targetScroll - contentMotion.startScroll) * ratio;
+      recordViewport.scrollTop = contentScrollAtProgress(
+        contentMotion.startScroll,
+        contentMotion.targetScroll,
+        ratio,
+      );
     } else {
       recordViewport.scrollTop = contentTarget(panelTop);
     }
   }
 
-  function prepareContentMotion(targetProgress) {
+  function prepareContentMotion(targetProgress, targetScroll) {
     const targetPanelTop = geometry(targetProgress).panelTop;
     contentMotion = {
       startProgress: progress,
       targetProgress,
       startScroll: recordViewport.scrollTop,
-      targetScroll: contentTarget(targetPanelTop),
-      ratio: 0,
+      targetScroll: targetScroll ?? contentTarget(targetPanelTop),
     };
   }
 
-  function animateTo(target, duration) {
+  function animateTo(target, duration, targetScroll) {
     cancelAnimationFrame(animationFrame);
-    prepareContentMotion(target);
+    prepareContentMotion(target, targetScroll);
     const from = progress;
     const distance = target - from;
     const startedAt = performance.now();
@@ -199,6 +198,7 @@ function initDemo() {
       velocity: 0,
       moved: false,
       startProgress: progress,
+      startScroll: recordViewport.scrollTop,
       scale,
       nextProgress: progress,
     };
@@ -217,9 +217,6 @@ function initDemo() {
     drag.lastTime = event.timeStamp;
     drag.moved ||= Math.abs(logicalDelta) >= 6;
     drag.nextProgress = dragProgress(drag.startProgress, logicalDelta);
-    if (shouldLockLatest(drag.source, drag.moved)) {
-      contentMotion = null;
-    }
     cancelAnimationFrame(dragFrame);
     dragFrame = requestAnimationFrame(() => {
       if (drag) render(drag.nextProgress);
@@ -264,7 +261,13 @@ function initDemo() {
         ? "expand"
         : "collapse";
     const target = settleTarget(progress, completedDrag.velocity, direction);
-    animateTo(target, target === 1 ? 330 : 280);
+    const targetScroll = panelSettleScroll(
+      completedDrag.source,
+      target,
+      completedDrag.startScroll,
+      contentTarget(geometry(target).panelTop),
+    );
+    animateTo(target, target === 1 ? 330 : 280, targetScroll);
   }
 
   function bindDragSurface(element, source) {
