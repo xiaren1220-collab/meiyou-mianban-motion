@@ -1,0 +1,11 @@
+{
+  "name": "点滴工具面板动效",
+  "short_name": "点滴动效",
+  "lang": "zh-CN",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#f6f6f8",
+  "theme_color": "#f6f6f8"
+}

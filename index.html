@@ -4,7 +4,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
     <meta name="theme-color" content="#f6f6f8">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="点滴工具面板动效">
     <title>点滴工具面板动效</title>
+    <link rel="manifest" href="manifest.webmanifest">
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
@@ -22,7 +27,7 @@
         <div id="contentBlocker" aria-hidden="true"></div>
 
         <section id="toolPanel" aria-label="记录工具面板">
-          <button id="panelHandle" type="button" aria-label="展开工具面板"></button>
+          <button id="panelHandle" type="button" aria-label="向上拖动展开工具面板"></button>
           <div id="iconViewport">
             <img id="toolIcons" src="assets/图标.png" alt="记录工具" draggable="false">
           </div>

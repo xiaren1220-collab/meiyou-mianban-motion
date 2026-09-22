@@ -1,6 +1,9 @@
 export const clamp = (value, min = 0, max = 1) =>
   Math.min(max, Math.max(min, value));
 
+export const monotonicProgress = (previous, current) =>
+  Math.max(previous, current);
+
 export function geometry(progress) {
   const p = clamp(progress);
   return {
@@ -72,8 +75,13 @@ export function contentScrollable(state) {
 
 export function tapAction(source, startProgress) {
   if (source === "content") return "collapse";
-  return startProgress < 0.5 ? "expand" : "none";
+  return "none";
 }
+
+export const shouldRenderGesture = (moved) => moved;
+
+export const shouldLockLatest = (source, moved) =>
+  source === "panel" && moved;
 
 function initDemo() {
   const app = document.querySelector("#app");
@@ -115,9 +123,11 @@ function initDemo() {
     )}px`;
     if (contentMotion) {
       const span = contentMotion.targetProgress - contentMotion.startProgress;
-      const ratio = span === 0
+      const liveRatio = span === 0
         ? 1
         : clamp((progress - contentMotion.startProgress) / span);
+      const ratio = monotonicProgress(contentMotion.ratio, liveRatio);
+      contentMotion.ratio = ratio;
       recordViewport.scrollTop =
         contentMotion.startScroll +
         (contentMotion.targetScroll - contentMotion.startScroll) * ratio;
@@ -133,6 +143,7 @@ function initDemo() {
       targetProgress,
       startScroll: recordViewport.scrollTop,
       targetScroll: contentTarget(targetPanelTop),
+      ratio: 0,
     };
   }
 
@@ -158,7 +169,7 @@ function initDemo() {
       app.dataset.mode = state;
       panelHandle.setAttribute(
         "aria-label",
-        target === 1 ? "收起工具面板" : "展开工具面板",
+        target === 1 ? "收起工具面板" : "向上拖动展开工具面板",
       );
       render(target);
       contentMotion = null;
@@ -206,6 +217,9 @@ function initDemo() {
     drag.lastTime = event.timeStamp;
     drag.moved ||= Math.abs(logicalDelta) >= 6;
     drag.nextProgress = dragProgress(drag.startProgress, logicalDelta);
+    if (shouldLockLatest(drag.source, drag.moved)) {
+      contentMotion = null;
+    }
     cancelAnimationFrame(dragFrame);
     dragFrame = requestAnimationFrame(() => {
       if (drag) render(drag.nextProgress);
@@ -216,7 +230,6 @@ function initDemo() {
   function endDrag(event, cancelled = false) {
     if (!drag || event.pointerId !== drag.pointerId) return;
     cancelAnimationFrame(dragFrame);
-    render(drag.nextProgress);
     event.currentTarget.releasePointerCapture?.(event.pointerId);
 
     const completedDrag = drag;
@@ -235,11 +248,14 @@ function initDemo() {
         animateTo(1, 330);
       } else {
         contentMotion = null;
-        state = "expanded";
+        state = completedDrag.startProgress >= 0.5 ? "expanded" : "collapsed";
         app.dataset.mode = state;
-        render(1);
       }
       return;
+    }
+
+    if (shouldRenderGesture(completedDrag.moved)) {
+      render(completedDrag.nextProgress);
     }
 
     const direction = completedDrag.source === "content"
